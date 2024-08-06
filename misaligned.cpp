@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <assert.h>
 #include <vector>
 #include <string>
@@ -15,6 +16,25 @@ int printColorMap() {
     return i * j;
 }
 
+
+std::vector<std::string> captureOutput() {
+    std::ostringstream buffer;
+    std::streambuf* old = std::cout.rdbuf(buffer.rdbuf()); // Redirect std::cout to buffer
+
+    printColorMap(); // Call the function that produces output
+
+    std::cout.rdbuf(old); // Restore original std::cout buffer
+
+    // Read the output into a vector of strings
+    std::vector<std::string> capturedOutput;
+    std::string line;
+    std::istringstream stream(buffer.str());
+    while (std::getline(stream, line)) {
+        capturedOutput.push_back(line);
+    }
+    return capturedOutput;
+}
+
 void testColorMap() {
     // Expected output
     std::vector<std::string> expectedOutput = {
@@ -25,9 +45,9 @@ void testColorMap() {
         "21 | Violet | Blue", "22 | Violet | Orange", "23 | Violet | Green", "24 | Violet | Brown", "25 | Violet | Slate"
     };
 
-    // Simulating capturing print output
-    std::vector<std::string> capturedOutput;
-    // Instead of printing, we capture the output into a vector (this is conceptual, not actual code)
+    
+    std::vector<std::string> capturedOutput = captureOutput();
+    
 
     // Compare captured output with expected output
     for (size_t i = 0; i < expectedOutput.size(); ++i) {
