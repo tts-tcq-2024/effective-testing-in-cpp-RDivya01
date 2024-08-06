@@ -3,29 +3,45 @@
 
 int alertFailureCount = 0;
 
+
+typedef int (*NetworkAlertFunc)(float);
+
+
 int networkAlertStub(float celcius) {
     std::cout << "ALERT: Temperature is " << celcius << " celcius.\n";
-    // Return 200 for ok
-    // Return 500 for not-ok
-    // stub always succeeds and returns 200
-    return 200;
+    if (celcius > 200.0) {
+        return 500; // Simulate not-ok response
+    }
+    return 200; // Ok response
 }
 
-void alertInCelcius(float farenheit) {
+void alertInCelcius(float farenheit, NetworkAlertFunc alertFunc) {
     float celcius = (farenheit - 32) * 5 / 9;
-    int returnCode = networkAlertStub(celcius);
+    int returnCode = alertFunc(celcius);
     if (returnCode != 200) {
-        // non-ok response is not an error! Issues happen in life!
-        // let us keep a count of failures to report
-        // However, this code doesn't count failures!
-        // Add a test below to catch this bug. Alter the stub above, if needed.
-        alertFailureCount += 0;
+        alertFailureCount++;
     }
 }
 
+void testAlertInCelcius() {
+    alertFailureCount = 0;
+
+    // Test cases
+    alertInCelcius(400.5, networkAlertStub);
+    assert(alertFailureCount == 1); // Should fail due to simulated error
+
+    alertInCelcius(303.6, networkAlertStub);
+    assert(alertFailureCount == 1); // Should not increment, still 1
+
+    alertInCelcius(202.2, networkAlertStub);
+    assert(alertFailureCount == 2); // Should increment to 2
+}
+
 int main() {
-    alertInCelcius(400.5);
-    alertInCelcius(303.6);
+    // Run tests
+    testAlertInCelcius();
+
+    // Output failure count
     std::cout << alertFailureCount << " alerts failed.\n";
     std::cout << "All is well (maybe!)\n";
     return 0;
